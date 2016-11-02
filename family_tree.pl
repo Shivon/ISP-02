@@ -116,6 +116,10 @@ granduncle(X, Y) :- male(X), parent(P, Y), (nephew(P, X) ; niece(P, X)).
 childless(X) :- male(X), not(father(X, _Y));
                 female(X), not(mother(X, _Y)).
 
+% child/2
+% X is child of Y
+child(X,Y) :- parent(Y,X).
+
 % uncle/2
 % uncle(X, Y), X is uncle of Y
 uncle(X, Y) :- male(X), parent(P, Y), sibling(P, X).
