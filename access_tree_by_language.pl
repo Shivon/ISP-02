@@ -2,15 +2,17 @@
 :- consult('readsentence.pl').
 :- consult('answer_dcg.pl').
 
-run(Sentence) :- repeat, read_sentence(Sentence), check_grammar(Sem, Sentence, []),  answer(Sem), fail.
+run(Sentence) :- repeat, read_sentence(Sentence), check_grammar(Sem, Sentence, []), answer(Sem), fail.
 
 %run :- repeat, write('> '), read(Sentence), read_sentence(Sentence), check_grammar(Sem, Sentence, []), answer(Sem), fail.
 %ist X der bruder von Y
-check_grammar(SemS) --> verbal_phrase(SemV,N), noun_phrase(SemNP,N), punctuation, {((SemNP = [_,SemV,_], SemS =.. SemNP); (X = [SemV,SemNP,_], SemS =.. X) )}.
+check_grammar(SemS) --> verb(N), noun_phrase(SemN, N), noun_phrase(SemNP,N), punctuation, { SemNP = [_,SemN,_], SemS =.. SemNP }.
+% wessen kind ist thor?
+check_grammar(SemS) --> noun_phrase(SemN, N), verb(N), noun_phrase(SemNP, N), punctuation, { Sem = [SemN, SemNP, _], SemS =.. Sem }.
 %wer sind die kinder von X
-check_grammar(SemS) --> verbal_phrase(N), noun_phrase(SemNP,N), punctuation, {SemS =.. SemNP}.
+check_grammar(SemS) --> interrogative_pronoun, verb(N), noun_phrase(SemNP,N), punctuation, { SemS =.. SemNP }.
 %ist X maennlich?
-check_grammar(SemS) --> verbal_phrase(N), noun_phrase(SemNP,N), adjective_phrase(SemAdj,N), punctuation, { SemAdj = [_,SemNP], SemS =.. SemAdj}.
+check_grammar(SemS) --> verb(N), noun_phrase(SemNP,N), adjective_phrase(SemAdj,N), punctuation, { SemAdj = [_,SemNP], SemS =.. SemAdj }.
 
 % lex(meaning, part of speech, word, mode)
 % pn = personal_name
@@ -25,11 +27,12 @@ check_grammar(SemS) --> verbal_phrase(N), noun_phrase(SemNP,N), adjective_phrase
 %   * pn
 %   * art, n
 %   * art, n, prepositional phrase
-noun_phrase(SemN,N) --> personal_name(SemN,N).
+noun_phrase(SemN,_) --> personal_name(SemN).
+noun_phrase(SemN,N) --> interrogative_pronoun, noun(SemN,N,_).
 noun_phrase(SemN,N) --> personal_pronoun, noun(SemN,N,_).
 noun_phrase([SemN,_,SemP],N) --> article(N,Gender), noun(SemN,N,Gender), prepositional_phrase(SemP,N).
 
-personal_name(SemN,N) --> [X], { lex(SemN, pn, X, N,_) }.
+personal_name(SemN) --> [SemN], { lex(SemN, pn) }.
 article(N,Gender) --> [X], {  lex(_, art, X, N,Gender)}.
 noun(SemN,N,Gender) --> [X], { lex(SemN, n, X, N,Gender)}.
 
@@ -58,28 +61,30 @@ adjective_phrase([SemAdj,_],N) --> article(N,_), adjective(SemAdj,N).
 adjective(SemAdj,N) --> [X], { lex(SemAdj, adj, X, N,_) }.
 
 punctuation --> [X], { lex(_, pun, X, _,_) }.
+interrogative_pronoun --> [X], { lex(_, ip, X, _, _) }.
+lex(Name, pn) :- (male(Name) ; female(Name)).
 
-lex(boer, pn, boer, _, _).
-lex(odin, pn, odin, _, _).
-lex(vili, pn, vili, _, _).
-lex(ve, pn, ve, _, _).
-lex(vidar, pn, vidar, _, _).
-lex(thor, pn, thor, _, _).
-lex(magni, pn, magni, _, _).
-lex(modi, pn, modi, _, _).
-lex(balder, pn, balder, _, _).
-lex(hoed, pn, hoed, _, _).
-lex(hermodur, pn, hermodur, _, _).
-lex(bragi, pn, bragi, _, _).
-lex(tyr, pn, tyr, _, _).
-lex(forseti, pn, forseti, _, _).
-lex(bestla, pn, bestla, _, _).
-lex(frigg, pn, frigg, _, _).
-lex(joerd, pn, joerd, _, _).
-lex(grid, pn, grid, _, _).
-lex(nanna, pn, nanna, _, _).
-lex(sif, pn, sif, _, _).
-lex(idun, pn, idun, _, _).
+% lex(boer, pn, boer, _, _).
+% lex(odin, pn, odin, _, _).
+% lex(vili, pn, vili, _, _).
+% lex(ve, pn, ve, _, _).
+% lex(vidar, pn, vidar, _, _).
+% lex(thor, pn, thor, _, _).
+% lex(magni, pn, magni, _, _).
+% lex(modi, pn, modi, _, _).
+% lex(balder, pn, balder, _, _).
+% lex(hoed, pn, hoed, _, _).
+% lex(hermodur, pn, hermodur, _, _).
+% lex(bragi, pn, bragi, _, _).
+% lex(tyr, pn, tyr, _, _).
+% lex(forseti, pn, forseti, _, _).
+% lex(bestla, pn, bestla, _, _).
+% lex(frigg, pn, frigg, _, _).
+% lex(joerd, pn, joerd, _, _).
+% lex(grid, pn, grid, _, _).
+% lex(nanna, pn, nanna, _, _).
+% lex(sif, pn, sif, _, _).
+% lex(idun, pn, idun, _, _).
 
 %Beziehungen
 lex(uncle, n, onkel, sg, m).
@@ -109,15 +114,15 @@ lex(male, adj, mann, sg,m).
 lex(male, adj, maennlich, sg,m).
 lex(female, adj, weiblich, sg,f).
 lex(female, adj, frau, sg, f).
-lex(spouse, adj, verheiratet, sg,_).
+lex(married, adj, verheiratet, sg,_).
 lex(childless, adj, kinderlos, sg,_).
 
 lex(_, pre, von, _,_).
 lex(_, v, ist, sg,_).
 lex(_, v, sind, pl,_).
 
-lex(_, pro, wer, _,_).
-lex(_, pro, wessen, _,_).
+lex(_, ip, wer, _,_).
+lex(_, ip, wessen, _,_).
 
 lex(_, pun, ?, _,_).
 

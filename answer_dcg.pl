@@ -1,6 +1,6 @@
 :- consult('family_tree.pl').
 
-answer(Sem) :-  (call(Sem), go(Sem);go_fail(Sem)),  false.
+answer(Sem) :- (call(Sem), go(Sem) ; go_fail(Sem)), false.
 
 go(Sem) :- call(Sem), Sem =.. Sem_As_List, split_list(Sem,Sem_As_List, ''), nl,!.
 go_fail(Sem) :- not(call(Sem)), Sem =.. Sem_As_List, split_list(Sem,Sem_As_List, 'nicht '), nl,!.
@@ -26,12 +26,13 @@ lex(sister, schwester, w).
 lex(nephew, neffe, m).
 lex(niece,  nichte, w).
 lex(granduncle,  grossonkel, m).
-lex(child,  kinder, m).
+lex(child, kind, n).
+lex(child,  kinder, w).
 
 %Adjektive
 lex(male,maennlich,_).
 lex(female, weiblich,_).
-lex(spouse,verheiratet,_).
+lex(married,verheiratet,_).
 lex(childless, kinderlos,_).
 
 lex(keine, 'keine ', w).
@@ -39,3 +40,4 @@ lex(keine, 'keinen ', m).
 
 art('die ', w).
 art('der ', m).
+art('das ', n).

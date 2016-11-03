@@ -127,3 +127,6 @@ uncle(X, Y) :- male(X), parent(P, Y), sibling(P, X).
 % not_married/2
 % not_married(X, Y), X is not married to Y
 not_married(X, Y) :- (male(X), female(Y); female(X), male(Y)), \+ spouse(X,Y).
+
+% married/1
+married(X) :- spouse(X, _).
